@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* CSS is embedded directly for simplicity */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 80vh;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .chat-body {
+            padding: 15px;
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .chat-footer {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .chat-footer input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        .chat-footer button {
+            padding: 10px 15px;
+            border-radius: 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .chat-footer button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .message p {
+            max-width: 75%;
+            padding: 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+
+        .message.user p {
+            background-color: #007bff;
+            color: #fff;
+            align-self: flex-end;
+        }
+
+        .message.bot p {
+            background-color: #e6e6e6;
+            color: #333;
+            align-self: flex-start;
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            .chat-container {
+                max-width: 100%;
+                height: 90vh;
+            }
+
+            .chat-header h4 {
+                font-size: 16px;
+            }
+
+            .chat-footer input {
+                font-size: 12px;
+            }
+
+            .chat-footer button {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-container {
+                max-width: 100%;
+                height: 90vh;
+            }
+
+            .chat-header h4 {
+                font-size: 14px;
+            }
+
+            .chat-footer input {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .chat-footer button {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .message p {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h4>Chatbot</h4>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <!-- Chat messages will appear here -->
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="message-input" placeholder="Type a message..." />
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Send message when user presses the send button
+        $('#send-button').on('click', function() {
+            let message = $('#message-input').val();
+            if (message.trim() !== "") {
+                appendMessage('user', message); // Append user's message
+                $('#message-input').val(''); // Clear input field
+                sendMessageToBot(message); // Send the message to the backend
+            }
+        });
+
+        // Send message when user presses Enter
+        $('#message-input').on('keypress', function(e) {
+            if (e.which === 13) {
+                $('#send-button').click();
+            }
+        });
+
+        // Append message to the chat window
+        function appendMessage(sender, message) {
+            const messageElement = `
+                <div class="message ${sender}">
+                    <p>${message}</p>
+                </div>
+            `;
+            $('#chat-body').append(messageElement);
+            $('#chat-body').scrollTop($('#chat-body')[0].scrollHeight); // Auto-scroll to the bottom
+        }
+
+        // Send message to the bot via AJAX
+        function sendMessageToBot(message) {
+            $.ajax({
+                url: '/api/chat',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ "message": message }),
+                success: function(response) {
+                    appendMessage('bot', response.response); // Append bot's response
+                },
+                error: function(error) {
+                    appendMessage('bot', 'Sorry, there was an error. Please try again.');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
